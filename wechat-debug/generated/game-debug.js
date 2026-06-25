@@ -235,6 +235,7 @@
         battleTemple: "battle-pack/battle-temple.png",
         battleFerry: "battle-pack/battle-ferry.png",
         battleBamboo: "battle-pack/battle-bamboo.png",
+        swordImpact: "battle-pack/sword-impact.png",
         daoistCutscenePoster: "video-pack/fuyao-poster.png",
         bgm: "audio-pack/cangshan-road.m4a",
         battleBgm: "audio-pack/iron-fan-valley.mp3",
@@ -1481,7 +1482,7 @@
           if (skill.status) target.status[skill.status] = skill.statusTurns || 1;
           const duration = skill.kind === "basic" ? 0.62 : 0.68;
           target.animation = { type: "hit", damage, time: duration, duration, skill, fromHp: target.displayHp, toHp: target.hp };
-          this.impactEffects.push({ x: target.x, y: target.y, time: 0.34, duration: 0.34, skill, damage, side: target.side });
+          this.impactEffects.push({ x: target.x, y: target.y, time: 0.42, duration: 0.42, skill, damage, side: target.side, sprite: "swordImpact" });
           this.screenShake = Math.max(this.screenShake, skill.kind === "aoe" ? 0.22 : 0.16);
           this.hitStop = Math.max(this.hitStop, skill.kind === "basic" ? 0.07 : 0.085);
           this.audit.attacks.push({ attackerId: attacker.id, targetId: target.id, skillId: skill.id, damage, targetHp: target.hp, status: skill.status || null });
@@ -1816,6 +1817,16 @@
             context.save();
             context.translate(center.x, center.y + 4);
             context.globalAlpha = alpha;
+            if (this.images[effect.sprite]) {
+              const image = this.images[effect.sprite];
+              const frame = Math.min(15, Math.floor(progress * 16));
+              const sourceWidth = image.width / 4;
+              const sourceHeight = image.height / 4;
+              const sx = frame % 4 * sourceWidth;
+              const sy = Math.floor(frame / 4) * sourceHeight;
+              const size = isAoe ? 112 : 94;
+              context.drawImage(image, sx, sy, sourceWidth, sourceHeight, -size / 2, -size / 2, size, size);
+            }
             context.strokeStyle = isStun ? "#ffe57a" : isAoe ? "#ff9050" : "#fff0bd";
             context.fillStyle = isStun ? "rgba(255, 229, 122, 0.28)" : isAoe ? "rgba(255, 118, 66, 0.24)" : "rgba(255, 244, 205, 0.26)";
             context.lineWidth = isAoe ? 6 : 5;
