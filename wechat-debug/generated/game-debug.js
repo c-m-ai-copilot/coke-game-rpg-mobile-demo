@@ -2345,12 +2345,12 @@
         async loadAssets() {
           const entries = Object.entries(ASSETS).filter(([key]) => !key.endsWith("Sfx") && !key.endsWith("Bgm") && key !== "bgm");
           let loaded = 0;
-          for (const [key, source] of entries) {
-            this.loadingSet("\u52A0\u8F7D\u56FE\u7247\u8D44\u6E90", `${loaded + 1}/${entries.length} ${source}`, 0.25 + loaded / entries.length * 0.62);
+          this.loadingSet("\u52A0\u8F7D\u56FE\u7247\u8D44\u6E90", `0/${entries.length} \u5E76\u884C\u4E0B\u8F7D\u5730\u56FE\u4E0E\u89D2\u8272\u8D44\u6E90\u3002`, 0.25);
+          await Promise.all(entries.map(async ([key, source]) => {
             this.images[key] = await loadImage(this.canvas, source);
             loaded += 1;
             this.loadingSet("\u52A0\u8F7D\u56FE\u7247\u8D44\u6E90", `${loaded}/${entries.length} ${source}`, 0.25 + loaded / entries.length * 0.62);
-          }
+          }));
         }
         loadingSet(stage, detail, progress) {
           globalThis.__cangshanLoading?.set?.(stage, detail, progress);
