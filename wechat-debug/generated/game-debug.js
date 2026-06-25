@@ -213,7 +213,9 @@
         hero: "character-pack/hero.png",
         heroAttack: "character-pack/hero-attack.png",
         companion: "character-pack/companion.png",
+        companionAttack: "character-pack/companion-attack.png",
         scout: "character-pack/scout.png",
+        scoutAttack: "character-pack/scout-attack.png",
         scoutArcher: "character-pack/scout-archer.png",
         monkGuard: "character-pack/monk-guard.png",
         yipintangLeader: "character-pack/yipintang-leader.png",
@@ -255,10 +257,10 @@
         objective: "\u51FB\u9000\u4F0F\u5175",
         players: [
           { id: "hero", name: GAME.heroName, sprite: "hero", attackSprite: "heroAttack", side: "player", x: 2, y: 7, hp: 88, qi: 110, move: 3, range: 2, damage: 32, skillIds: ["guiyuan_sword", "daze", "whirlwind"] },
-          { id: "companion", name: GAME.companionName, sprite: "companion", side: "player", x: 1, y: 7, hp: 72, qi: 90, move: 3, range: 1, damage: 24, skillIds: ["quick_slash", "heal", "guard_break"] }
+          { id: "companion", name: GAME.companionName, sprite: "companion", attackSprite: "companionAttack", side: "player", x: 1, y: 7, hp: 72, qi: 90, move: 3, range: 1, damage: 24, skillIds: ["quick_slash", "heal", "guard_break"] }
         ],
         enemies: [
-          { id: "scoutA", name: "\u6697\u54E8\u7532", sprite: "scout", side: "enemy", x: 4, y: 7, hp: 38, qi: 40, move: 2, range: 1, damage: 18, skillIds: ["quick_slash"] },
+          { id: "scoutA", name: "\u6697\u54E8\u7532", sprite: "scout", attackSprite: "scoutAttack", side: "enemy", x: 4, y: 7, hp: 38, qi: 40, move: 2, range: 1, damage: 18, skillIds: ["quick_slash"] },
           { id: "scoutB", name: "\u7AF9\u6797\u5F29\u624B", sprite: "scoutArcher", side: "enemy", x: 5, y: 5, hp: 46, qi: 40, move: 2, range: 2, damage: 16, skillIds: ["arrow_shot"] }
         ],
         skills: {
