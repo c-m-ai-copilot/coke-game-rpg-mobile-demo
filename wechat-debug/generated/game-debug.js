@@ -35,6 +35,7 @@
       var canvas = document.querySelector("#game");
       var listeners = { start: [], move: [], end: [], cancel: [] };
       var storage = /* @__PURE__ */ new Map();
+      window.__cangshanLoading?.set("\u51C6\u5907\u6D4F\u89C8\u5668\u8C03\u8BD5\u73AF\u5883", "\u521D\u59CB\u5316\u89E6\u6478\u3001\u97F3\u9891\u548C\u89C6\u9891\u6A21\u62DF\u5668\u3002", 0.08);
       function eventFromPointer(event) {
         const rect = canvas.getBoundingClientRect();
         return { changedTouches: [{ identifier: event.pointerId || 0, clientX: event.clientX - rect.left, clientY: event.clientY - rect.top }] };
@@ -519,7 +520,7 @@
         return new Promise((resolve, reject) => {
           const image = canvas.createImage ? canvas.createImage() : wx.createImage();
           image.onload = () => resolve(image);
-          image.onerror = reject;
+          image.onerror = () => reject(new Error(`Image failed to load: ${source}`));
           image.src = `${wx.__assetBase || ""}${source}`;
         });
       }
@@ -570,8 +571,18 @@
       }
       function loadAssetPacks() {
         if (!wx.loadSubpackage) return Promise.resolve();
-        const load = (name) => new Promise((resolve, reject) => wx.loadSubpackage({ name, success: resolve, fail: reject }));
-        return Promise.all([load("worldWestPack"), load("worldEastPack"), load("worldMapPack"), load("moonValleyPack"), load("roomPack"), load("characterPack"), load("audioPack"), load("battlePack"), load("videoPack")]);
+        const packs = ["worldWestPack", "worldEastPack", "worldMapPack", "moonValleyPack", "roomPack", "characterPack", "audioPack", "battlePack", "videoPack"];
+        let loaded = 0;
+        const load = (name) => new Promise((resolve, reject) => wx.loadSubpackage({
+          name,
+          success: () => {
+            loaded += 1;
+            globalThis.__cangshanLoading?.set("\u52A0\u8F7D\u8D44\u6E90\u5206\u5305", `${loaded}/${packs.length} ${name}`, 0.1 + loaded / packs.length * 0.14);
+            resolve();
+          },
+          fail: (error) => reject(new Error(`Subpackage failed to load: ${name} ${error?.errMsg || ""}`))
+        }));
+        return Promise.all(packs.map(load));
       }
       function readSave(key) {
         try {
@@ -2307,8 +2318,11 @@
           this.requestFrame = typeof requestAnimationFrame === "function" ? (callback) => requestAnimationFrame(callback) : (callback) => setTimeout(callback, 16);
         }
         async start() {
+          this.loadingSet("\u52A0\u8F7D\u8D44\u6E90\u5206\u5305", "\u51C6\u5907\u5730\u56FE\u3001\u89D2\u8272\u3001\u97F3\u9891\u548C\u5267\u60C5\u52A8\u753B\u3002", 0.1);
           await loadAssetPacks();
+          this.loadingSet("\u52A0\u8F7D\u56FE\u7247\u8D44\u6E90", "\u5F00\u59CB\u8BFB\u53D6\u5730\u56FE\u548C\u89D2\u8272\u56FE\u50CF\u3002", 0.25);
           await this.loadAssets();
+          this.loadingSet("\u521D\u59CB\u5316\u6E38\u620F\u4E16\u754C", "\u521B\u5EFA\u5730\u56FE\u3001\u89D2\u8272\u3001\u5267\u60C5\u548C\u97F3\u9891\u7CFB\u7EDF\u3002", 0.9);
           this.mapManager = new MapManager(this.images, this.viewport);
           this.player = new Player(this.images.hero, this.mapManager.map.spawn);
           this.audio = createAudio(ASSETS.bgm);
@@ -2324,13 +2338,22 @@
           this.promptSfx = createSfx(ASSETS.promptSfx);
           this.buySfx = createSfx(ASSETS.buySfx);
           this.bindTouch();
+          this.loadingSet("\u51C6\u5907\u8FDB\u5165\u6C5F\u6E56", "\u6B63\u5728\u7ED8\u5236\u7B2C\u4E00\u5E27\u3002", 0.96);
           this.frame();
+          globalThis.__cangshanLoading?.done?.();
         }
         async loadAssets() {
           const entries = Object.entries(ASSETS).filter(([key]) => !key.endsWith("Sfx") && !key.endsWith("Bgm") && key !== "bgm");
-          await Promise.all(entries.map(async ([key, source]) => {
+          let loaded = 0;
+          for (const [key, source] of entries) {
+            this.loadingSet("\u52A0\u8F7D\u56FE\u7247\u8D44\u6E90", `${loaded + 1}/${entries.length} ${source}`, 0.25 + loaded / entries.length * 0.62);
             this.images[key] = await loadImage(this.canvas, source);
-          }));
+            loaded += 1;
+            this.loadingSet("\u52A0\u8F7D\u56FE\u7247\u8D44\u6E90", `${loaded}/${entries.length} ${source}`, 0.25 + loaded / entries.length * 0.62);
+          }
+        }
+        loadingSet(stage, detail, progress) {
+          globalThis.__cangshanLoading?.set?.(stage, detail, progress);
         }
         frame() {
           const now = Date.now();
@@ -2927,6 +2950,7 @@
         if (SIMULATOR_SCENARIO.cutscene) game.playCutscene(SIMULATOR_SCENARIO.cutscene);
       }).catch((error) => {
         console.error("Failed to start Cangshan RPG", error);
+        globalThis.__cangshanLoading?.error?.("\u6E38\u620F\u542F\u52A8\u5931\u8D25", error?.message || String(error));
       });
     }
   });
