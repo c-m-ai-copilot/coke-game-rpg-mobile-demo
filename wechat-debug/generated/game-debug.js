@@ -53,8 +53,22 @@
         __assetBase: "../wechat-minigame/",
         createCanvas: () => canvas,
         createImage: () => new Image(),
-        getSystemInfoSync: () => ({ windowWidth: 390, windowHeight: 844, screenWidth: 390, screenHeight: 844, pixelRatio: Math.min(2, window.devicePixelRatio || 1), safeArea: { top: 0, bottom: 844 } }),
-        getMenuButtonBoundingClientRect: () => ({ top: 10, right: 378, bottom: 44, left: 292, width: 86, height: 34 }),
+        getSystemInfoSync: () => {
+          const width = Math.round(Math.min(window.innerWidth || 390, 390));
+          const height = Math.round(window.innerHeight || 844);
+          return {
+            windowWidth: width,
+            windowHeight: height,
+            screenWidth: width,
+            screenHeight: height,
+            pixelRatio: Math.min(2, window.devicePixelRatio || 1),
+            safeArea: { top: 0, bottom: height }
+          };
+        },
+        getMenuButtonBoundingClientRect: () => {
+          const width = Math.round(Math.min(window.innerWidth || 390, 390));
+          return { top: 10, right: width - 12, bottom: 44, left: width - 98, width: 86, height: 34 };
+        },
         onTouchStart: (handler) => listeners.start.push(handler),
         onTouchMove: (handler) => listeners.move.push(handler),
         onTouchEnd: (handler) => listeners.end.push(handler),
@@ -816,7 +830,15 @@
           this.buttons = [];
           const capsuleBottom = viewport.menuButton?.bottom || 44;
           this.headerHeight = Math.max(126, capsuleBottom + 78);
-          this.playRect = { x: 0, y: this.headerHeight, width: viewport.width, height: viewport.height - this.headerHeight - 122 };
+          this.controlHeight = viewport.height < 740 ? 150 : 132;
+          this.controlBottomInset = viewport.height < 740 ? 18 : 10;
+          this.controlButtonSize = viewport.height < 740 ? 60 : 68;
+          this.playRect = {
+            x: 0,
+            y: this.headerHeight,
+            width: viewport.width,
+            height: Math.max(260, viewport.height - this.headerHeight - this.controlHeight)
+          };
         }
         render(context, state) {
           this.buttons = [];
@@ -922,20 +944,24 @@
         renderControls(context, trigger) {
           const h = this.viewport.height;
           context.fillStyle = "#171510";
-          context.fillRect(0, this.playRect.y + this.playRect.height, this.viewport.width, h);
-          const baseY = h - 72;
-          this.directionButton(context, "left", 18, baseY - 34, 68, "left");
-          this.directionButton(context, "up", 88, baseY - 70, 68, "up");
-          this.directionButton(context, "down", 88, baseY + 2, 68, "down");
-          this.directionButton(context, "right", 158, baseY - 34, 68, "right");
-          this.button(context, "interact", this.viewport.width - 92, baseY - 38, 68, 68, trigger ? "\u4EA4\u4E92" : "\u67E5\u770B", trigger ? "primaryRound" : "disabledRound");
-          this.button(context, "inventory", this.viewport.width - 166, baseY - 88, 68, 34, "\u80CC\u5305", "normal");
-          if (this.lastState?.worldMapUnlocked) this.button(context, "worldmap", this.viewport.width - 92, baseY - 88, 68, 34, "\u8206\u56FE", "normal");
+          context.fillRect(0, Math.max(0, h - this.controlHeight), this.viewport.width, this.controlHeight);
+          const size = this.controlButtonSize;
+          const gap = viewportGap(this.viewport.width);
+          const centerX = 18 + size + gap;
+          const centerY = h - this.controlBottomInset - gap - size;
+          this.directionButton(context, "left", centerX - size - gap, centerY - size / 2, size, "left");
+          this.directionButton(context, "up", centerX, centerY - size - gap, size, "up");
+          this.directionButton(context, "down", centerX, centerY + gap, size, "down");
+          this.directionButton(context, "right", centerX + size + gap, centerY - size / 2, size, "right");
+          const actionSize = size + 4;
+          this.button(context, "interact", this.viewport.width - actionSize - 24, centerY - actionSize / 2, actionSize, actionSize, trigger ? "\u4EA4\u4E92" : "\u67E5\u770B", trigger ? "primaryRound" : "disabledRound");
+          this.button(context, "inventory", this.viewport.width - actionSize - 98, centerY - actionSize - 18, 68, 34, "\u80CC\u5305", "normal");
+          if (this.lastState?.worldMapUnlocked) this.button(context, "worldmap", this.viewport.width - actionSize - 24, centerY - actionSize - 18, 68, 34, "\u8206\u56FE", "normal");
           if (trigger) {
             context.textAlign = "right";
             context.font = "13px sans-serif";
             context.fillStyle = "#ead5a3";
-            context.fillText(trigger.label, this.viewport.width - 104, h - 76);
+            context.fillText(trigger.label, this.viewport.width - actionSize - 34, Math.max(h - this.controlHeight + 28, centerY - actionSize - 26));
           }
         }
         directionButton(context, id, x, y, size, direction) {
@@ -1210,6 +1236,9 @@
         if (rarity === "\u7CBE\u826F") return "#83b9d7";
         if (rarity === "\u7A00\u6709") return "#d5b45f";
         return "#b9c28c";
+      }
+      function viewportGap(width) {
+        return width < 370 ? 5 : 8;
       }
       module.exports = { UiRenderer };
     }

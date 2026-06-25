@@ -9,7 +9,7 @@
       * { box-sizing: border-box; }
       html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #10100e; }
       body { display: grid; place-items: center; }
-      canvas { width: min(100vw, 390px); height: min(100vh, 844px); aspect-ratio: 390 / 844; image-rendering: pixelated; background: #171510; touch-action: none; box-shadow: 0 0 0 1px #413827; }
+      canvas { width: min(100vw, 390px); height: 100vh; max-height: 844px; image-rendering: pixelated; background: #171510; touch-action: none; box-shadow: 0 0 0 1px #413827; }
       .loading {
         position: fixed;
         inset: 0;
@@ -89,6 +89,6 @@
         setTimeout(() => window.__cangshanLoading?.set("继续等待资源", "如果长时间停在这里，可以刷新页面或切换网络。", 0.55), 30000);
       })();
     </script>
-    <script src="./generated/game-debug.js?v=loading-parallel-1782353497"></script>
+    <script src="./generated/game-debug.js?v=mobile-controls-1782355496"></script>
   </body>
 </html>
